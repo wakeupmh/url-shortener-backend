@@ -48,7 +48,7 @@ export const updateUrlJsonApiSchema = z.object({
     })
   }),
   params: z.object({
-    id: z.string().uuid(),
+    id: z.string(),
   })
 });
 
@@ -58,7 +58,7 @@ export const updateUrlDirectSchema = z.object({
     slug: z.string().min(1).max(50).optional()
   }),
   params: z.object({
-    id: z.string().uuid(),
+    id: z.string(),
   })
 });
 

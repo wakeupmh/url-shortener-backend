@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import urlRoutes from './interfaces/http/routes/urlRoutes';
 import initializeDatabase from './infrastructure/database/init';
+import { clerkMiddleware } from '@clerk/express';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
+app.use(clerkMiddleware());
 
 app.use(helmet());
 app.use(cors());

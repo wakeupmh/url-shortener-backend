@@ -12,9 +12,9 @@ ping();
 
 setInterval(ping, pingInterval);
 
-console.log('ping service started'.toLowerCase());
+console.log('ping service started');
 
 process.on('SIGINT', () => {
-  console.log('ping service stopped'.toLowerCase());
+  console.log('ping service stopped');
   process.exit(0);
 });

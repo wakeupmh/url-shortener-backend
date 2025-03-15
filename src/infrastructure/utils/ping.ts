@@ -8,7 +8,7 @@ const pingInterval = parseInt(process.env.PING_INTERVAL || '300000', 10); // Def
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
 export function ping() {
-  console.log(`pinging ${baseUrl}/health at ${new Date().toISOString()}`.toLowerCase());
+  console.log(`pinging ${baseUrl}/health at ${new Date().toISOString()}`);
   
   const httpModule = baseUrl.startsWith('https') ? https : http;
   
@@ -16,7 +16,7 @@ export function ping() {
     const { statusCode } = res;
     
     if (statusCode !== 200) {
-      console.error(`ping failed with status code: ${statusCode}`.toLowerCase());
+      console.error(`ping failed with status code: ${statusCode}`);
       return;
     }
     
@@ -26,24 +26,24 @@ export function ping() {
     });
     
     res.on('end', () => {
-      console.log(`ping successful: ${data}`.toLowerCase());
+      console.log(`ping successful: ${data}`);
     });
   });
   
   req.on('error', (error) => {
-    console.error(`ping failed: ${error.message}`.toLowerCase());
+    console.error(`ping failed: ${error.message}`);
   });
   
   req.end();
 }
 
 if (require.main === module) {
-  console.log(`starting ping service for ${baseUrl}`.toLowerCase());
+  console.log(`starting ping service for ${baseUrl}`);
   ping();
   setInterval(ping, pingInterval);
   
   process.on('SIGINT', () => {
-    console.log('ping service stopped'.toLowerCase());
+    console.log('ping service stopped');
     process.exit(0);
   });
 }

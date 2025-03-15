@@ -7,14 +7,14 @@ import initializeDatabase from './infrastructure/database/init';
 
 dotenv.config();
 
-if (!process.env.CLERK_API_KEY) {
-  console.warn('clerk_api_key is not set. authentication will not work properly.'.toLowerCase());
+if (!process.env.CLERK_SECRET_KEY) {
+  console.warn('clerk_secret_key is not set. authentication will not work properly.');
 }
 
 if(process.env.NODE_ENV !== 'production') {
   initializeDatabase()
     .catch(err => {
-      console.error('failed to initialize database: '.toLowerCase() + err.message.toLowerCase());
+      console.error('failed to initialize database: ' + err.message);
       process.exit(1);
     });
 }
@@ -43,27 +43,24 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   };
   
-  console.log(`health check: ${JSON.stringify(healthData)}`.toLowerCase());
+  console.log(`health check: ${JSON.stringify(healthData)}`);
   res.status(200).json(healthData);
 });
 
 app.listen(port, () => {
-  console.log(`server running on port ${port}`.toLowerCase());
+  console.log(`server running on port ${port}`);
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error(`uncaught exception: ${error.message.toLowerCase()}${error.stack ? ', stack: ' + error.stack.toLowerCase() : ''}`);
-  // Give time to flush logs before exiting
+  console.error(`uncaught exception: ${error.message}${error.stack ? ', stack: ' + error.stack : ''}`);
   setTimeout(() => process.exit(1), 1000);
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (reason) => {
   if (reason instanceof Error) {
-    console.error(`unhandled rejection: ${reason.message.toLowerCase()}${reason.stack ? ', stack: ' + reason.stack.toLowerCase() : ''}`);
+    console.error(`unhandled rejection: ${reason.message}${reason.stack ? ', stack: ' + reason.stack : ''}`);
   } else {
-    console.error(`unhandled rejection: ${String(reason).toLowerCase()}`);
+    console.error(`unhandled rejection: ${String(reason)}`);
   }
 });
 

@@ -17,7 +17,7 @@ export class UrlController {
       const { originalUrl, slug } = req.body.data.attributes;
       const { userId } = getAuth(req)
 
-      console.log(`request to create url: ${originalUrl?.toLowerCase()}${slug ? `, slug: ${slug.toLowerCase()}` : ''}${userId ? `, user: ${userId.toLowerCase()}` : ''}`);
+      console.log(`request to create url: ${originalUrl}${slug ? `, slug: ${slug}` : ''}${userId ? `, user: ${userId}` : ''}`);
 
       if (!originalUrl) {
         console.warn(`missing original url in request`);
@@ -32,7 +32,7 @@ export class UrlController {
       }
 
       if (!this.urlService.isValidUrl(originalUrl)) {
-        console.warn(`invalid url format: ${originalUrl.toLowerCase()}`);
+        console.warn(`invalid url format: ${originalUrl}`);
         res.status(400).json({
           errors: [{
             status: '400',
@@ -52,11 +52,11 @@ export class UrlController {
         shortUrl
       });
 
-      console.log(`url created successfully: ${url.getId().toLowerCase()}, slug: ${url.getSlug().toLowerCase()}`);
+      console.log(`url created successfully: ${url.getId()}, slug: ${url.getSlug()}`);
       res.status(201).json(serializedUrl);
     } catch (error) {
       if (error instanceof Error && error.message === 'Slug is already in use') {
-        console.warn(`slug conflict: ${req.body.data.attributes.slug?.toLowerCase()}`);
+        console.warn(`slug conflict: ${req.body.data.attributes.slug}`);
         
         res.status(409).json({
           errors: [{
@@ -68,7 +68,7 @@ export class UrlController {
         return;
       }
 
-      console.error(`error creating url: ${error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()}`);
+      console.error(`error creating url: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',
@@ -82,13 +82,13 @@ export class UrlController {
   async getUrlById (req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      console.log(`request to get url by id: ${id.toLowerCase()}`);
+      console.log(`request to get url by id: ${id}`);
       
       const url = await this.urlService.getUrlById(id);
       const { userId } = getAuth(req)
       
       if (url.getUserId() && userId !== url.getUserId()) {
-        console.warn(`unauthorized access attempt for url id: ${id.toLowerCase()}, request user: ${userId?.toLowerCase()}, url owner: ${url.getUserId()?.toLowerCase()}`);
+        console.warn(`unauthorized access attempt for url id: ${id}, request user: ${userId}, url owner: ${url.getUserId()}`);
         
         res.status(403).json({
           errors: [{
@@ -108,11 +108,11 @@ export class UrlController {
         shortUrl
       });
 
-      console.log(`url retrieved successfully: ${id.toLowerCase()}`);
+      console.log(`url retrieved successfully: ${id}`);
       res.status(200).json(serializedUrl);
     } catch (error) {
       if (error instanceof Error && error.message === 'URL not found') {
-        console.warn(`url not found: ${req.params.id.toLowerCase()}`);
+        console.warn(`url not found: ${req.params.id}`);
         
         res.status(404).json({
           errors: [{
@@ -124,7 +124,7 @@ export class UrlController {
         return;
       }
 
-      console.error(`error retrieving url: ${req.params.id.toLowerCase()}, error: ${error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()}`);
+      console.error(`error retrieving url: ${req.params.id}, error: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',
@@ -152,7 +152,7 @@ export class UrlController {
         return;
       }
 
-      console.log(`request to get urls for user: ${userId.toLowerCase()}`);
+      console.log(`request to get urls for user: ${userId}`);
       const urls = await this.urlService.getUrlsByUserId(userId);
       const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
       
@@ -163,10 +163,10 @@ export class UrlController {
 
       const serializedUrls = this.urlSerializer.serialize(urlsWithShortUrl);
       
-      console.log(`urls retrieved successfully for user: ${userId.toLowerCase()}, count: ${urls.length}`);
+      console.log(`urls retrieved successfully for user: ${userId}, count: ${urls.length}`);
       res.status(200).json(serializedUrls);
     } catch (error) {
-      console.error(`error retrieving user urls: ${error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()}`);
+      console.error(`error retrieving user urls: ${error instanceof Error ? error.message : String(error)}`);
       
       res.status(500).json({
         errors: [{
@@ -185,11 +185,11 @@ export class UrlController {
 
       const { userId } = getAuth(req)
       
-      console.log(`request to update url: ${id.toLowerCase()}${originalUrl ? `, new url: ${originalUrl.toLowerCase()}` : ''}${slug ? `, new slug: ${slug.toLowerCase()}` : ''}`);
+      console.log(`request to update url: ${id}${originalUrl ? `, new url: ${originalUrl}` : ''}${slug ? `, new slug: ${slug}` : ''}`);
       
       const existingUrl = await this.urlService.getUrlById(id);
       if (userId && existingUrl.getUserId() && userId !== existingUrl.getUserId()) {
-        console.warn(`unauthorized update attempt for url id: ${id.toLowerCase()}, request user: ${userId.toLowerCase()}, url owner: ${existingUrl.getUserId()?.toLowerCase()}`);
+        console.warn(`unauthorized update attempt for url id: ${id}, request user: ${userId}, url owner: ${existingUrl.getUserId()}`);
         
         res.status(403).json({
           errors: [{
@@ -202,7 +202,7 @@ export class UrlController {
       }
 
       if (originalUrl && !this.urlService.isValidUrl(originalUrl)) {
-        console.warn(`invalid url format in update: ${originalUrl.toLowerCase()}`);
+        console.warn(`invalid url format in update: ${originalUrl}`);
         
         res.status(400).json({
           errors: [{
@@ -223,12 +223,12 @@ export class UrlController {
         shortUrl
       });
 
-      console.log(`url updated successfully: ${id.toLowerCase()}`);
+      console.log(`url updated successfully: ${id}`);
       res.status(200).json(serializedUrl);
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'URL not found') {
-          console.warn(`url not found for update: ${req.params.id.toLowerCase()}`);
+          console.warn(`url not found for update: ${req.params.id}`);
           
           res.status(404).json({
             errors: [{
@@ -241,7 +241,7 @@ export class UrlController {
         }
         
         if (error.message === 'Slug is already in use') {
-          console.warn(`slug conflict in update: ${req.body.data.attributes.slug?.toLowerCase()}`);
+          console.warn(`slug conflict in update: ${req.body.data.attributes.slug}`);
           
           res.status(409).json({
             errors: [{
@@ -254,7 +254,7 @@ export class UrlController {
         }
       }
 
-      console.error(`error updating url: ${req.params.id.toLowerCase()}, error: ${error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()}`);
+      console.error(`error updating url: ${req.params.id}, error: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',
@@ -270,11 +270,11 @@ export class UrlController {
       const { id } = req.params;
       const { userId } = getAuth(req)
 
-      console.log(`request to delete url: ${id.toLowerCase()}`);
+      console.log(`request to delete url: ${id}`);
 
       const existingUrl = await this.urlService.getUrlById(id);
       if (userId && existingUrl.getUserId() && userId !== existingUrl.getUserId()) {
-        console.warn(`unauthorized delete attempt for url id: ${id.toLowerCase()}, request user: ${userId.toLowerCase()}, url owner: ${existingUrl.getUserId()?.toLowerCase()}`);
+        console.warn(`unauthorized delete attempt for url id: ${id}, request user: ${userId}, url owner: ${existingUrl.getUserId()}`);
         
         res.status(403).json({
           errors: [{
@@ -288,11 +288,11 @@ export class UrlController {
 
       await this.urlService.deleteUrl(id);
       
-      console.log(`url deleted successfully: ${id.toLowerCase()}`);
+      console.log(`url deleted successfully: ${id}`);
       res.status(204).send();
     } catch (error) {
       if (error instanceof Error && error.message === 'URL not found') {
-        console.warn(`url not found for deletion: ${req.params.id.toLowerCase()}`);
+        console.warn(`url not found for deletion: ${req.params.id}`);
         
         res.status(404).json({
           errors: [{
@@ -304,7 +304,7 @@ export class UrlController {
         return;
       }
 
-      console.error(`error deleting url: ${req.params.id.toLowerCase()}, error: ${error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()}`);
+      console.error(`error deleting url: ${req.params.id}, error: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',
@@ -319,20 +319,20 @@ export class UrlController {
     try {
       const { slug } = req.params;
       
-      console.log(`request to redirect from slug: ${slug.toLowerCase()}, referrer: ${req.headers.referer?.toLowerCase() || 'direct'}`);
+      console.log(`request to redirect from slug: ${slug}, referrer: ${req.headers.referer || 'direct'}`);
       
       const url = await this.urlService.getUrlBySlug(slug);
       
       this.urlService.trackVisit(slug).catch(err => {
-        console.error(`error tracking visit for slug: ${slug.toLowerCase()}, error: ${err.message.toLowerCase()}`);
+        console.error(`error tracking visit for slug: ${slug}, error: ${err.message}`);
       });
 
-      console.log(`redirecting to: ${url.getOriginalUrl().toLowerCase()}, visit count: ${url.getVisitCount() + 1}`);
+      console.log(`redirecting to: ${url.getOriginalUrl()}, visit count: ${url.getVisitCount() + 1}`);
       
       res.redirect(url.getOriginalUrl());
     } catch (error) {
       if (error instanceof Error && error.message === 'URL not found') {
-        console.warn(`slug not found for redirect: ${req.params.slug.toLowerCase()}`);
+        console.warn(`slug not found for redirect: ${req.params.slug}`);
         
         res.status(404).json({
           errors: [{
@@ -344,7 +344,7 @@ export class UrlController {
         return;
       }
 
-      console.error(`error redirecting from slug: ${req.params.slug.toLowerCase()}, error: ${error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()}`);
+      console.error(`error redirecting from slug: ${req.params.slug}, error: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',

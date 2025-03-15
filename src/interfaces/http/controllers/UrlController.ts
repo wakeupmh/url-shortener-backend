@@ -14,34 +14,20 @@ export class UrlController {
 
   async createUrl (req: Request, res: Response): Promise<void> {
     try {
-      const { originalUrl, slug } = req.body.data.attributes;
+      let originalUrl: string;
+      let slug: string | undefined;
+      
+      if (req.body.data && req.body.data.attributes) {
+        originalUrl = req.body.data.attributes.originalUrl;
+        slug = req.body.data.attributes.slug;
+      } else {
+        originalUrl = req.body.originalUrl;
+        slug = req.body.slug;
+      }
+      
       const { userId } = getAuth(req)
 
       console.log(`request to create url: ${originalUrl}${slug ? `, slug: ${slug}` : ''}${userId ? `, user: ${userId}` : ''}`);
-
-      if (!originalUrl) {
-        console.warn(`missing original url in request`);
-        res.status(400).json({
-          errors: [{
-            status: '400',
-            title: 'Bad Request',
-            detail: 'Original URL is required'
-          }]
-        });
-        return;
-      }
-
-      if (!this.urlService.isValidUrl(originalUrl)) {
-        console.warn(`invalid url format: ${originalUrl}`);
-        res.status(400).json({
-          errors: [{
-            status: '400',
-            title: 'Bad Request',
-            detail: 'Invalid URL format'
-          }]
-        });
-        return;
-      }
 
       const url = await this.urlService.createUrl(originalUrl, slug, userId);
       const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
@@ -56,7 +42,7 @@ export class UrlController {
       res.status(201).json(serializedUrl);
     } catch (error) {
       if (error instanceof Error && error.message === 'Slug is already in use') {
-        console.warn(`slug conflict: ${req.body.data.attributes.slug}`);
+        console.warn(`slug conflict: ${req.body.slug || (req.body.data?.attributes?.slug || '')}`);
         
         res.status(409).json({
           errors: [{
@@ -99,7 +85,7 @@ export class UrlController {
         });
         return;
       }
-
+      
       const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
       const shortUrl = `${baseUrl}/${url.getSlug()}`;
       
@@ -124,7 +110,7 @@ export class UrlController {
         return;
       }
 
-      console.error(`error retrieving url: ${req.params.id}, error: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`error retrieving url: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',
@@ -137,22 +123,23 @@ export class UrlController {
 
   async getUserUrls (req: Request, res: Response): Promise<void> {
     try {
-      const { userId } = getAuth(req)
-
+      const { userId } = getAuth(req);
+      
       if (!userId) {
-        console.warn(`unauthorized access attempt for user urls`);
+        console.warn('attempt to get user urls without authentication');
         
         res.status(401).json({
           errors: [{
             status: '401',
             title: 'Unauthorized',
-            detail: 'Authentication required'
+            detail: 'Authentication is required to access this resource'
           }]
         });
         return;
       }
 
       console.log(`request to get urls for user: ${userId}`);
+      
       const urls = await this.urlService.getUrlsByUserId(userId);
       const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
       
@@ -160,14 +147,13 @@ export class UrlController {
         ...url,
         shortUrl: `${baseUrl}/${url.getSlug()}`
       }));
-
-      const serializedUrls = this.urlSerializer.serialize(urlsWithShortUrl);
       
-      console.log(`urls retrieved successfully for user: ${userId}, count: ${urls.length}`);
+      const serializedUrls = this.urlSerializer.serialize(urlsWithShortUrl);
+
+      console.log(`retrieved ${urls.length} urls for user: ${userId}`);
       res.status(200).json(serializedUrls);
     } catch (error) {
       console.error(`error retrieving user urls: ${error instanceof Error ? error.message : String(error)}`);
-      
       res.status(500).json({
         errors: [{
           status: '500',
@@ -181,7 +167,17 @@ export class UrlController {
   async updateUrl (req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { originalUrl, slug } = req.body.data.attributes;
+      
+      let originalUrl: string | undefined;
+      let slug: string | undefined;
+      
+      if (req.body.data && req.body.data.attributes) {
+        originalUrl = req.body.data.attributes.originalUrl;
+        slug = req.body.data.attributes.slug;
+      } else {
+        originalUrl = req.body.originalUrl;
+        slug = req.body.slug;
+      }
 
       const { userId } = getAuth(req)
       
@@ -196,19 +192,6 @@ export class UrlController {
             status: '403',
             title: 'Forbidden',
             detail: 'You do not have permission to update this URL'
-          }]
-        });
-        return;
-      }
-
-      if (originalUrl && !this.urlService.isValidUrl(originalUrl)) {
-        console.warn(`invalid url format in update: ${originalUrl}`);
-        
-        res.status(400).json({
-          errors: [{
-            status: '400',
-            title: 'Bad Request',
-            detail: 'Invalid URL format'
           }]
         });
         return;
@@ -241,7 +224,7 @@ export class UrlController {
         }
         
         if (error.message === 'Slug is already in use') {
-          console.warn(`slug conflict in update: ${req.body.data.attributes.slug}`);
+          console.warn(`slug conflict in update: ${req.body.slug || (req.body.data?.attributes?.slug || '')}`);
           
           res.status(409).json({
             errors: [{
@@ -254,7 +237,7 @@ export class UrlController {
         }
       }
 
-      console.error(`error updating url: ${req.params.id}, error: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`error updating url: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',
@@ -268,13 +251,14 @@ export class UrlController {
   async deleteUrl (req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { userId } = getAuth(req)
-
+      const { userId } = getAuth(req);
+      
       console.log(`request to delete url: ${id}`);
-
-      const existingUrl = await this.urlService.getUrlById(id);
-      if (userId && existingUrl.getUserId() && userId !== existingUrl.getUserId()) {
-        console.warn(`unauthorized delete attempt for url id: ${id}, request user: ${userId}, url owner: ${existingUrl.getUserId()}`);
+      
+      const url = await this.urlService.getUrlById(id);
+      
+      if (userId && url.getUserId() && userId !== url.getUserId()) {
+        console.warn(`unauthorized delete attempt for url id: ${id}, request user: ${userId}, url owner: ${url.getUserId()}`);
         
         res.status(403).json({
           errors: [{
@@ -285,14 +269,14 @@ export class UrlController {
         });
         return;
       }
-
-      await this.urlService.deleteUrl(id);
       
+      await this.urlService.deleteUrl(id);
+
       console.log(`url deleted successfully: ${id}`);
       res.status(204).send();
     } catch (error) {
       if (error instanceof Error && error.message === 'URL not found') {
-        console.warn(`url not found for deletion: ${req.params.id}`);
+        console.warn(`url not found for delete: ${req.params.id}`);
         
         res.status(404).json({
           errors: [{
@@ -304,7 +288,7 @@ export class UrlController {
         return;
       }
 
-      console.error(`error deleting url: ${req.params.id}, error: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`error deleting url: ${error instanceof Error ? error.message : String(error)}`);
       res.status(500).json({
         errors: [{
           status: '500',
@@ -349,7 +333,7 @@ export class UrlController {
         errors: [{
           status: '500',
           title: 'Internal Server Error',
-          detail: 'An error occurred while redirecting to the original URL'
+          detail: 'An error occurred while redirecting to the URL'
         }]
       });
     }

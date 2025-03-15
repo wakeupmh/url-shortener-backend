@@ -8,6 +8,7 @@ A URL shortening service built with Node.js, Express, TypeScript, and PostgreSQL
 - Track visit counts for shortened URLs
 - User authentication via Clerk
 - Rate limiting to prevent abuse
+- Request validation using Zod
 - RESTful API following JSON:API specification
 - Self-ping mechanism for health checks
 - Ping service as a heartbeat to prevent application spin-down on Render
@@ -19,6 +20,7 @@ A URL shortening service built with Node.js, Express, TypeScript, and PostgreSQL
 - Express
 - PostgreSQL
 - Clerk for authentication
+- Zod for validation
 - Docker (optional for local development)
 
 ## Prerequisites
@@ -158,6 +160,33 @@ DELETE /api/urls/:id
 
 ```
 GET /:slug
+```
+
+## API Validation
+
+The API uses Zod for request validation to ensure data integrity and provide clear error messages. The validation:
+
+- Supports both JSON:API format and direct format for request bodies
+- Validates URLs to ensure they are properly formatted
+- Ensures required fields are present
+- Validates parameter types and formats (e.g., UUIDs, slugs)
+- Returns standardized error responses following JSON:API specification
+
+Example of a validation error response:
+
+```json
+{
+  "errors": [
+    {
+      "status": "400",
+      "title": "Validation Error",
+      "detail": "Required",
+      "source": {
+        "pointer": "/data/originalUrl"
+      }
+    }
+  ]
+}
 ```
 
 ## License

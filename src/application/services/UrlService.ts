@@ -96,9 +96,17 @@ export class UrlService {
 
   isValidUrl(url: string): boolean {
     try {
+      // First try with the URL constructor
       new URL(url);
       return true;
     } catch (error) {
+      // If that fails, check if it matches our URL regex pattern
+      // This allows for URLs without protocol like "example.com"
+      const URL_REGEX = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+      if (URL_REGEX.test(url)) {
+        return true;
+      }
+      
       console.warn(`invalid url format: ${url}`);
       return false;
     }

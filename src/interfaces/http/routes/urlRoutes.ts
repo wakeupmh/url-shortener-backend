@@ -4,6 +4,13 @@ import { UrlService } from '../../../application/services/UrlService';
 import { PgUrlRepository } from '../../../infrastructure/repositories/PgUrlRepository';
 import { rateLimit } from 'express-rate-limit';
 import { requireAuth } from '@clerk/express'
+import { validateRequest } from '../middleware/validateRequest';
+import { 
+  createUrlSchema, 
+  updateUrlSchema, 
+  urlParamsSchema, 
+  slugParamsSchema 
+} from '../schemas/urlSchemas';
 
 const urlRepository = new PgUrlRepository();
 const urlService = new UrlService(urlRepository);
@@ -27,13 +34,13 @@ const apiLimiter = rateLimit({
 
 router.use('/api', apiLimiter);
 
-router.post('/api/urls', urlController.createUrl.bind(urlController));
+router.post('/api/urls', validateRequest(createUrlSchema), urlController.createUrl.bind(urlController));
 
 router.get('/api/urls', requireAuth(), urlController.getUserUrls.bind(urlController));
-router.get('/api/urls/:id', requireAuth(), urlController.getUrlById.bind(urlController));
-router.put('/api/urls/:id', requireAuth(), urlController.updateUrl.bind(urlController));
-router.delete('/api/urls/:id', requireAuth(), urlController.deleteUrl.bind(urlController));
+router.get('/api/urls/:id', requireAuth(), validateRequest(urlParamsSchema), urlController.getUrlById.bind(urlController));
+router.put('/api/urls/:id', requireAuth(), validateRequest(updateUrlSchema), urlController.updateUrl.bind(urlController));
+router.delete('/api/urls/:id', requireAuth(), validateRequest(urlParamsSchema), urlController.deleteUrl.bind(urlController));
 
-router.get('/:slug', urlController.redirectToOriginalUrl.bind(urlController));
+router.get('/:slug', validateRequest(slugParamsSchema), urlController.redirectToOriginalUrl.bind(urlController));
 
 export default router;

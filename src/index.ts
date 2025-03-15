@@ -29,6 +29,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', (req, res) => {
+  const calculateInMB = (value: number) => value / 1024 / 1024 
   const uptime = process.uptime();
   const memoryUsage = process.memoryUsage();
   const healthData = {
@@ -36,9 +37,9 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: `${Math.floor(uptime / 86400)}d ${Math.floor((uptime % 86400) / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`,
     memory: {
-      rss: `${Math.round(memoryUsage.rss / 1024 / 1024)} mb`,
-      heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)} mb`,
-      heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} mb`,
+      rss: `${Math.round(calculateInMB(memoryUsage.rss))} mb`,
+      heapTotal: `${Math.round(calculateInMB(memoryUsage.heapTotal))} mb`,
+      heapUsed: `${Math.round(calculateInMB(memoryUsage.heapUsed))} mb`,
     },
     environment: process.env.NODE_ENV || 'development'
   };

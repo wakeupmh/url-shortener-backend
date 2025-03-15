@@ -27,13 +27,13 @@ const apiLimiter = rateLimit({
 
 router.use('/api', apiLimiter);
 
-router.post('/api/urls', urlController.createUrl);
+router.post('/api/urls', urlController.createUrl.bind(urlController));
 
-router.get('/api/urls', requireAuth(), urlController.getUserUrls);
-router.get('/api/urls/:id', requireAuth(), urlController.getUrlById);
-router.put('/api/urls/:id', requireAuth(), urlController.updateUrl);
-router.delete('/api/urls/:id', requireAuth(), urlController.deleteUrl);
+router.get('/api/urls', requireAuth(), urlController.getUserUrls.bind(urlController));
+router.get('/api/urls/:id', requireAuth(), urlController.getUrlById.bind(urlController));
+router.put('/api/urls/:id', requireAuth(), urlController.updateUrl.bind(urlController));
+router.delete('/api/urls/:id', requireAuth(), urlController.deleteUrl.bind(urlController));
 
-router.get('/:slug', urlController.redirectToOriginalUrl);
+router.get('/:slug', urlController.redirectToOriginalUrl.bind(urlController));
 
 export default router;

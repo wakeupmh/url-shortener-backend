@@ -26,8 +26,6 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-app.use(urlRoutes);
-
 app.get('/health', (req, res) => {
   const uptime = process.uptime();
   const memoryUsage = process.memoryUsage();
@@ -46,6 +44,8 @@ app.get('/health', (req, res) => {
   console.log(`health check: ${JSON.stringify(healthData)}`);
   res.status(200).json(healthData);
 });
+
+app.use(urlRoutes);
 
 app.listen(port, () => {
   console.log(`server running on port ${port}`);

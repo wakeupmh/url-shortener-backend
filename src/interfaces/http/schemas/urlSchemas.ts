@@ -27,7 +27,7 @@ export const createUrlSchema = z.union([
 
 export const urlParamsSchema = z.object({
   params: z.object({
-    id: z.string().uuid(),
+    id: z.string(),
   })
 });
 

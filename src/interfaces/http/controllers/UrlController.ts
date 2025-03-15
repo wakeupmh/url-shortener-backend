@@ -43,7 +43,6 @@ export class UrlController {
     } catch (error) {
       if (error instanceof Error && error.message === 'Slug is already in use') {
         console.warn(`slug conflict: ${req.body.slug || (req.body.data?.attributes?.slug || '')}`);
-        
         res.status(409).json({
           errors: [{
             status: '409',

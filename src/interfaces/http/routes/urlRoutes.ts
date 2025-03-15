@@ -38,7 +38,7 @@ router.post('/api/urls', validateRequest(createUrlSchema), urlController.createU
 
 router.get('/api/urls', requireAuth(), urlController.getUserUrls.bind(urlController));
 router.get('/api/urls/:id', requireAuth(), validateRequest(urlParamsSchema), urlController.getUrlById.bind(urlController));
-router.put('/api/urls/:id', requireAuth(), validateRequest(updateUrlSchema), urlController.updateUrl.bind(urlController));
+router.patch('/api/urls/:id', requireAuth(), validateRequest(updateUrlSchema), urlController.updateUrl.bind(urlController));
 router.delete('/api/urls/:id', requireAuth(), validateRequest(urlParamsSchema), urlController.deleteUrl.bind(urlController));
 
 router.get('/:slug', validateRequest(slugParamsSchema), urlController.redirectToOriginalUrl.bind(urlController));

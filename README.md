@@ -10,6 +10,7 @@ A URL shortening service built with Node.js, Express, TypeScript, and PostgreSQL
 - Rate limiting to prevent abuse
 - RESTful API following JSON:API specification
 - Self-ping mechanism for health checks
+- Ping service as a heartbeat to prevent application spin-down on Render
 
 ## Tech Stack
 
@@ -39,6 +40,7 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX=100
 CLERK_API_KEY=your_clerk_api_key
 CLERK_FRONTEND_API=your_clerk_frontend_api
+PING_INTERVAL=300000
 ```
 
 ## Installation
@@ -81,6 +83,20 @@ npm run dev
 ```bash
 npm start
 ```
+
+### Ping Service
+
+The application includes a ping service that acts as a heartbeat to prevent the application from spinning down on hosting platforms like Render that have idle timeout policies. This is particularly useful for free-tier deployments.
+
+To run the ping service separately:
+
+```bash
+npm run ping
+```
+
+The ping service periodically sends requests to the application's health endpoint to keep it alive. You can configure the interval using the `PING_INTERVAL` environment variable (in milliseconds, default is 5 minutes).
+
+When deployed to Render, the ping service is automatically started as part of the application, ensuring continuous availability without manual intervention.
 
 ## API Endpoints
 
